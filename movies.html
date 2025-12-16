@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie List</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --accent: #06b6d4;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 20% 20%, #111827, #0b1222 50%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      max-width: 960px;
+      margin: 0 auto 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.5px;
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .grid {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .actions {
+      max-width: 960px;
+      margin: 12px auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    #print-btn,
+    #print-btn-top,
+    #upload-btn-top {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #print-btn:hover,
+    #print-btn-top:hover,
+    #upload-btn-top:hover {
+      filter: brightness(1.1);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      transition: transform 160ms ease, border-color 160ms ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+    }
+    .poster {
+      width: 31.25%;
+      align-self: center;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      background: #0b1222;
+    }
+    .content {
+      padding: 16px 16px 18px;
+      display: grid;
+      gap: 8px;
+    }
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .year {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .meta {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .label {
+      font-weight: 600;
+      color: var(--text);
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 4px;
+      font-size: 14px;
+    }
+    .section-with-select {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .lists-column {
+      display: grid;
+      gap: 12px;
+      flex: 1;
+    }
+    .rt-picker {
+      display: grid;
+      gap: 6px;
+      min-width: 150px;
+      justify-items: flex-end;
+      align-items: center;
+      width: 100%;
+    }
+    .rt-select-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .rt-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .rt-stack {
+      display: grid;
+      gap: 12px;
+      min-width: 240px;
+      justify-items: flex-end;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+.rt-select {
+      background: var(--border);
+      color: var(--text);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 16px 24px;
+      font-size: 22px;
+    }
+    .rt-icon {
+      width: 128px;
+      height: 128px;
+      visibility: hidden;
+    }
+    .actions {
+      max-width: 960px;
+      margin: 12px auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    #print-btn,
+    #print-btn-top {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #print-btn:hover,
+    #print-btn-top:hover {
+      filter: brightness(1.1);
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>2026 Movies</h1>
+      <div class="hint">Guess how you think these 2026 movies are going to do!</div>
+    </div>
+  </header>
+
+  <div class="actions">
+    <button id="print-btn-top">Print movie scores</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button id="upload-btn-top">Upload scores</button>
+      <input type="file" id="upload-input" accept=".txt" style="display:none;" />
+    </div>
+  </div>
+
+  <main class="grid" id="movie-grid"></main>
+  <div class="actions">
+    <button id="print-btn">Print movie scores</button>
+  </div>
+
+  <script>
+    const rtIcons = {
+      Rotten:
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><path d="M38 54c-16 0-24-14-12-20-8-16 18-24 28-10 6-12 28-12 32 2 18-10 28 20 10 26 12 8 2 28-14 24-4 16-32 22-38 2-14 6-24-14-10-24z" fill="#16a34a" stroke="#0f5f2f" stroke-width="8" stroke-linejoin="round"/><circle cx="52" cy="36" r="6" fill="#166534"/><circle cx="76" cy="36" r="6" fill="#166534"/><path d="M56 78c10 10 24 6 32-6" stroke="#0f5f2f" stroke-width="8" stroke-linecap="round" fill="none"/></svg>`),
+      "Certified Fresh": "https://thesciencesurvey.com/wp-content/uploads/2023/05/FreshTomato.svg.png",
+      Fresh: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Rotten_Tomatoes.svg/757px-Rotten_Tomatoes.svg.png",
+      Skip:
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="8" y="8" width="48" height="48" rx="12" fill="#1f2937" stroke="#4b5563" stroke-width="4"/><path d="M20 32h24" stroke="#9ca3af" stroke-width="6" stroke-linecap="round"/><path d="M24 24h16" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/></svg>`)
+    };
+
+    const loadSelections = () => {
+      try {
+        return JSON.parse(localStorage.getItem("rtSelections") || "{}");
+      } catch {
+        return {};
+      }
+    };
+
+    const saveSelections = (data) => {
+      localStorage.setItem("rtSelections", JSON.stringify(data));
+    };
+
+    const selections = loadSelections();
+
+    const getSelection = (title) => {
+      const val = selections[title];
+      if (!val) return { critic: "Skip", audience: "Skip" };
+      if (typeof val === "string") return { critic: val, audience: val };
+      return {
+        critic: val.critic || "Skip",
+        audience: val.audience || "Skip"
+      };
+    };
+
+    const normalizeChoice = (choice) => {
+      const map = {
+        skip: "Skip",
+        "certified fresh": "Certified Fresh",
+        fresh: "Fresh",
+        rotten: "Rotten"
+      };
+      const key = (choice || "").toString().trim().toLowerCase();
+      return map[key] || "Skip";
+    };
+
+    const movies = [
+      {
+        title: "Greenland 2: Migration",
+        year: 2026,
+        releaseDate: "January 9, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt14850054/",
+        poster: "https://m.media-amazon.com/images/M/MV5BOWEzM2IzZTMtYzA2Yi00NjY0LWE1ODktNTllZmI3ZTI1MzBmXkEyXkFqcGc@._V1_.jpg",
+        summary: "The surviving Garrity family must leave the safety of the Greenland bunker and embark on a perilous journey across the decimated frozen wasteland of Europe to find a new home.",
+        cast: [
+          "Morena Baccarin",
+          "Gerard Butler",
+          "Roman Griffin Davis",
+          "Sophie Thompson"
+        ],
+        director: "Ric Roman Waugh",
+        directorBest: "Greenland (2020)",
+        directorBestCritic: "77%",
+        directorBestAudience: "63%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/greenland",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/greenland",
+        directorWorst: "Angel Has Fallen (2019)",
+        directorWorstCritic: "38%",
+        directorWorstAudience: "93%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/angel_has_fallen",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/angel_has_fallen"
+      },
+      {
+        title: "28 Years Later: The Bone Temple",
+        year: 2026,
+        releaseDate: "January 16, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt32141377/",
+        poster: "https://m.media-amazon.com/images/M/MV5BYmY3MmRhMWMtY2FhNS00M2VmLWFmNzEtYTMyZWU0OTVlYzQ4XkEyXkFqcGc@._V1_.jpg",
+        summary: "As Spike is inducted into Jimmy Crystal's gang on the mainland, Dr. Kelson makes a discovery that could alter the world.",
+        cast: [
+          "Ralph Fiennes",
+          "Jack O'Connell",
+          "Emma Laird",
+          "Robert Rhodes"
+        ],
+        director: "Nia DaCosta",
+        directorBest: "Candyman (2021)",
+        directorBestCritic: "84%",
+        directorBestAudience: "72%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/candyman_2021",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/candyman_2021",
+        directorWorst: "The Marvels (2023)",
+        directorWorstCritic: "63%",
+        directorWorstAudience: "79%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/the_marvels",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/the_marvels"
+      },
+      {
+        title: "Good Luck, Have Fun, Don't Die",
+        year: 2025,
+        releaseDate: "February 13, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt1341338/",
+        poster: "https://m.media-amazon.com/images/M/MV5BYmIyZmQxYzgtMzQ5My00NzhiLWI1M2UtMTEzYTFlYzc0YWI1XkEyXkFqcGc@._V1_.jpg",
+        summary: "A \"Man From the Future\" arrives at a diner in Los Angeles where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence",
+        cast: [
+          "Michael Peña",
+          "Sam Rockwell",
+          "Juno Temple",
+          "Zazie Beetz"
+        ],
+        director: "Gore Verbinski",
+        directorBest: "Rango (2011)",
+        directorBestCritic: "88%",
+        directorBestAudience: "70%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/rango",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/rango",
+        directorWorst: "The Lone Ranger (2013)",
+        directorWorstCritic: "31%",
+        directorWorstAudience: "51%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/the_lone_ranger",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/the_lone_ranger"
+      },
+      {
+        title: "Scream 7",
+        year: 2026,
+        releaseDate: "February 27, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt27047903/",
+        poster: "https://m.media-amazon.com/images/M/MV5BYTIxMTYxY2YtMGMxNi00Y2U0LWE5OWYtMDNjZDYzODIwOGU4XkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "When a new Ghostface killer emerges in the town where Sidney Prescott has built a new life, her darkest fears are realized as her daughter becomes the next target.",
+        cast: [
+          "Neve Campbell",
+          "Courteney Cox",
+          "Isabel May",
+          "Jasmin Savoy Brown"
+        ],
+        director: "Kevin Williamson",
+        directorBest: "Scream (1996)",
+        directorBestCritic: "76%",
+        directorBestAudience: "82%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/scream",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/scream",
+        directorWorst: "Teaching Mrs. Tingle (1999)",
+        directorWorstCritic: "19%",
+        directorWorstAudience: "31%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/teaching_mrs_tingle",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/teaching_mrs_tingle"
+      },
+      {
+        title: "Hoppers",
+        year: 2026,
+        releaseDate: "March 6, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt26443616/",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzRiMzZlMTMtNmU3OC00MDUwLThmNDUtMTBjZmQ3MWQ4NTljXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "A 19-year-old animal lover uses technology that places her consciousness into a robotic beaver to uncover mysteries within the animal world beyond her imagination.",
+        cast: [
+          "Jon Hamm",
+          "Dave Franco",
+          "Eduardo Franco",
+          "Meryl Streep"
+        ],
+        director: "Daniel Chong",
+        directorBest: "We Bare Bears: The Movie (2020)",
+        directorBestCritic: "N/A",
+        directorBestAudience: "83%",
+        directorBestCriticLink: "",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/we_bare_bears_the_movie",
+        directorWorst: "TBD",
+        directorWorstCritic: "N/A",
+        directorWorstAudience: "N/A",
+        directorWorstCriticLink: "",
+        directorWorstAudienceLink: ""
+      },
+      {
+        title: "Project Hail Mary",
+        year: 2026,
+        releaseDate: "March 20, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt12042730/",
+        poster: "https://m.media-amazon.com/images/M/MV5BYTI4MzYxYzAtMDk1Yi00MDljLWEyM2ItODZmNzZhNTUwMmU4XkEyXkFqcGc@._V1_.jpg",
+        summary: "An astronaut tries to save Earth while alone in outer space.",
+        cast: [
+          "Ryan Gosling",
+          "Milana Vayntrub",
+          "Sandra Hüller",
+          "Ken Leung"
+        ],
+        director: "Phil Lord & Christopher Miller",
+        directorBest: "The Lego Movie (2014)",
+        directorBestCritic: "96%",
+        directorBestAudience: "87%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/the_lego_movie",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/the_lego_movie",
+        directorWorst: "22 Jump Street (2014)",
+        directorWorstCritic: "84%",
+        directorWorstAudience: "77%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/22_jump_street",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/22_jump_street"
+      },
+      {
+        title: "The Super Mario Galaxy Movie",
+        year: 2026,
+        releaseDate: "April 3, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt28650488/",
+        poster: "https://m.media-amazon.com/images/M/MV5BNmI4YWM2MzktYjNjNy00YmM1LThhNmItOWM1ODkzMDYyZTk0XkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "After defeating Bowser and saving Brooklyn, Mario faces Wario and Bowser Jr.'s evil alliance. Now, alongside his friends and Yoshi, he must stop their plans for world domination.",
+        cast: [
+          "Anya Taylor-Joy",
+          "Chris Pratt",
+          "Jack Black",
+          "Brie Larson"
+        ],
+        director: "Aaron Horvath & Michael Jelenic",
+        directorBest: "Teen Titans Go! To the Movies (2018)",
+        directorBestCritic: "92%",
+        directorBestAudience: "71%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/teen_titans_go_to_the_movies",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/teen_titans_go_to_the_movies",
+        directorWorst: "The Super Mario Bros. Movie (2023)",
+        directorWorstCritic: "59%",
+        directorWorstAudience: "95%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/the_super_mario_bros_movie",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/the_super_mario_bros_movie"
+      },
+      {
+        title: "Michael",
+        year: 2026,
+        releaseDate: "April 24, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt11378946/",
+        poster: "https://m.media-amazon.com/images/M/MV5BMjg1MmRiODQtMjU1OC00Nzc5LTlhNjktNzllMmUwODIzMDU2XkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "The story of the famous musician Michael Jackson, known as the King of Pop.",
+        cast: [
+          "Miles Teller",
+          "Colman Domingo",
+          "Jaafar Jackson",
+          "Kat Graham"
+        ],
+        director: "Antoine Fuqua",
+        directorBest: "Training Day (2001)",
+        directorBestCritic: "74%",
+        directorBestAudience: "89%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/training_day",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/training_day",
+        directorWorst: "Infinite (2021)",
+        directorWorstCritic: "17%",
+        directorWorstAudience: "34%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/infinite",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/infinite"
+      },
+      {
+        title: "Mortal Kombat II",
+        year: 2026,
+        releaseDate: "May 8, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt17490712/",
+        poster: "https://m.media-amazon.com/images/M/MV5BNDMyNDJhMjMtZTc4My00MGExLWJjN2MtNWRlNWJmMjcyOTZlXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "The fan favorite champions -- now joined by Johnny Cage himself -- are pitted against one another in the ultimate battle to defeat the dark rule of Shao Kahn that threatens the very existence of the Earthrealm and its defenders.",
+        cast: [
+          "Karl Urban",
+          "Ludi Lin",
+          "Jessica McNamee",
+          "Joe Taslim"
+        ],
+        director: "Simon McQuoid",
+        directorBest: "Mortal Kombat (2021)",
+        directorBestCritic: "55%",
+        directorBestAudience: "85%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/mortal_kombat_2021",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/mortal_kombat_2021",
+        directorWorst: "Mortal Kombat: Annihilation (1997)",
+        directorWorstCritic: "4%",
+        directorWorstAudience: "24%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/mortal_kombat_annihilation",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/mortal_kombat_annihilation"
+      },
+      {
+        title: "Star Wars: The Mandalorian and Grogu",
+        year: 2026,
+        releaseDate: "May 22, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt30825738/",
+        poster: "https://m.media-amazon.com/images/M/MV5BNjYwYzM4OTUtMDhmMy00ZTZiLTk0YzMtZGQ1MTRhMDNjZjMzXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "Once a lone bounty hunter, Mandalorian Din Djarin and his apprentice Grogu embark on an exciting new Star Wars adventure.",
+        cast: [
+          "Pedro Pascal",
+          "Sigourney Weaver",
+          "Jeremy Allen White",
+          "Steve Blum"
+        ],
+        director: "Jon Favreau",
+        directorBest: "Iron Man (2008)",
+        directorBestCritic: "94%",
+        directorBestAudience: "91%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/iron_man",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/iron_man",
+        directorWorst: "Cowboys & Aliens (2011)",
+        directorWorstCritic: "44%",
+        directorWorstAudience: "43%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/cowboys_and_aliens",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/cowboys_and_aliens"
+      },
+      {
+        title: "Masters of the Universe",
+        year: 2026,
+        releaseDate: "June 5, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt0427340/",
+        poster: "https://m.media-amazon.com/images/M/MV5BNWE0MDE0NTctNTQ3Zi00ZjJiLTllYzgtZjA2NDg2OGRiZWZlXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "A young man on Earth discovers a fabulous secret legacy as the prince of an alien planet, and must recover a magic sword and return home to protect his kingdom.",
+        cast: [
+          "Morena Baccarin",
+          "Idris Elba",
+          "Alison Brie",
+          "Jared Leto"
+        ],
+        director: "Travis Knight",
+        directorBest: "Kubo and the Two Strings (2016)",
+        directorBestCritic: "97%",
+        directorBestAudience: "86%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/kubo_and_the_two_strings",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/kubo_and_the_two_strings",
+        directorWorst: "Bumblebee (2018)",
+        directorWorstCritic: "91%",
+        directorWorstAudience: "75%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/bumblebee_2018",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/bumblebee_2018"
+      },
+      {
+        title: "Scary Movie 6",
+        year: 2026,
+        releaseDate: "June 12, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt32093575/",
+        poster: "https://m.media-amazon.com/images/M/MV5BYTU5NzBkNDYtMGQxZC00ZWRmLWJiNjctMGI2OTI5M2M2ZTBhXkEyXkFqcGc@._V1_.jpg",
+        summary: "Plot summary not available yet.",
+        cast: [
+          "Lochlyn Munro",
+          "Anna Faris",
+          "Regina Hall",
+          "Chris Elliott"
+        ],
+        director: "Michael Tiddes",
+        directorBest: "A Haunted House (2013)",
+        directorBestCritic: "10%",
+        directorBestAudience: "51%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/a_haunted_house",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/a_haunted_house",
+        directorWorst: "Naked (2017)",
+        directorWorstCritic: "0%",
+        directorWorstAudience: "32%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/naked_2017",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/naked_2017"
+      },
+      {
+        title: "Toy Story 5",
+        year: 2026,
+        releaseDate: "June 19, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt29355505/",
+        poster: "https://m.media-amazon.com/images/M/MV5BZGRlY2M0NmMtZjk3Yy00YzRmLWFiM2YtMWNlNTMwYmE3ODRmXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "Buzz, Woody, Jessie are challenged after being introduced to what kids are obsessed with today: electronics.",
+        cast: [
+          "Tom Hanks",
+          "Tim Allen",
+          "Greta Lee",
+          "Joan Cusack"
+        ],
+        director: "McKenna Harris & Andrew Stanton",
+        directorBest: "WALL·E (2008)",
+        directorBestCritic: "95%",
+        directorBestAudience: "90%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/wall_e",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/wall_e",
+        directorWorst: "John Carter (2012)",
+        directorWorstCritic: "52%",
+        directorWorstAudience: "60%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/john_carter",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/john_carter"
+      },
+      {
+        title: "The Odyssey",
+        year: 2026,
+        releaseDate: "July 17, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt33764258/",
+        poster: "https://m.media-amazon.com/images/M/MV5BNDQ0MGE5MTQtODk5Ny00NTI5LTk4MDUtZDQzNDhhOTI2Yzc5XkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "After the Trojan War, Odysseus faces a dangerous voyage back to Ithaca, meeting creatures like the Cyclops Polyphemus, Sirens, and Circe along the way.",
+        cast: [
+          "Mia Goth",
+          "Ryan Hurst",
+          "Anne Hathaway",
+          "Matt Damon"
+        ],
+        director: "Christopher Nolan",
+        directorBest: "The Dark Knight (2008)",
+        directorBestCritic: "94%",
+        directorBestAudience: "94%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/the_dark_knight",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/the_dark_knight",
+        directorWorst: "Tenet (2020)",
+        directorWorstCritic: "70%",
+        directorWorstAudience: "76%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/tenet",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/tenet"
+      },
+      {
+        title: "Spider-Man: Brand New Day",
+        year: 2026,
+        releaseDate: "July 31, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt22084616/",
+        poster: "https://m.media-amazon.com/images/M/MV5BMTJhZGE3NmYtYTg0Ny00MWUzLWE0MmUtYTZjYTg1ZjVlMWRkXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "Peter Parker tries to focus on college and leave Spider-Man behind. But when a new threat endangers his friends, he must break his promise and suit up again, teaming with an unexpected ally to protect those he loves.",
+        cast: [
+          "Sadie Sink",
+          "Mark Ruffalo",
+          "Zendaya",
+          "Tom Holland"
+        ],
+        director: "Destin Daniel Cretton",
+        directorBest: "Shang-Chi and the Legend of the Ten Rings (2021)",
+        directorBestCritic: "92%",
+        directorBestAudience: "98%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/shang_chi_and_the_legend_of_the_ten_rings",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/shang_chi_and_the_legend_of_the_ten_rings",
+        directorWorst: "The Glass Castle (2017)",
+        directorWorstCritic: "51%",
+        directorWorstAudience: "79%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/the_glass_castle",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/the_glass_castle"
+      },
+      {
+        title: "Super Troopers 3",
+        year: 2026,
+        releaseDate: "August 7, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt8820258/",
+        poster: "no poster",
+        summary: "Third installment in the franchise.",
+        cast: [
+          "Brian Cox",
+          "Lisa Gilroy",
+          "Nat Faxon",
+          "Chace Crawford"
+        ],
+        director: "Jay Chandrasekhar",
+        directorBest: "Super Troopers (2001)",
+        directorBestCritic: "37%",
+        directorBestAudience: "90%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/super_troopers",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/super_troopers",
+        directorWorst: "Super Troopers 2 (2018)",
+        directorWorstCritic: "35%",
+        directorWorstAudience: "64%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/super_troopers_2",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/super_troopers_2"
+      },
+      {
+        title: "Coyote vs. Acme",
+        year: 2026,
+        releaseDate: "August 28, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt1756855/",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzcwNDU0ODEtMDA3Ny00ZGUwLTk0MmYtMmFjMzk3ZTMzOTE3XkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "A story set in the ACME warehouse, the manufacturer of anything and everything used by the Looney Tunes characters.",
+        cast: [
+          "John Cena",
+          "Lana Condor",
+          "Will Forte",
+          "P.J. Byrne"
+        ],
+        director: "Dave Green",
+        directorBest: "Earth to Echo (2014)",
+        directorBestCritic: "49%",
+        directorBestAudience: "47%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/earth_to_echo",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/earth_to_echo",
+        directorWorst: "Teenage Mutant Ninja Turtles: Out of the Shadows (2016)",
+        directorWorstCritic: "38%",
+        directorWorstAudience: "47%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/teenage_mutant_ninja_turtles_out_of_the_shadows",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/teenage_mutant_ninja_turtles_out_of_the_shadows"
+      },
+      {
+        title: "How to Rob a Bank",
+        year: 2026,
+        releaseDate: "September 4, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt35866986/",
+        poster: "no poster",
+        summary:
+          "Bank robbers are posting their heists on social media, causing police to chase them.",
+        cast: [
+          "Zoe Kravitz",
+          "Nicholas Hoult",
+          "Christian Slater",
+          "John C. Reilly"
+        ],
+        director: "David Leitch",
+        directorBest: "Deadpool 2 (2018)",
+        directorBestCritic: "83%",
+        directorBestAudience: "85%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/deadpool_2",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/deadpool_2",
+        directorWorst: "Fast & Furious Presents: Hobbs & Shaw (2019)",
+        directorWorstCritic: "67%",
+        directorWorstAudience: "88%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/fast_and_furious_presents_hobbs_and_shaw",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/fast_and_furious_presents_hobbs_and_shaw"
+      },
+      {
+        title: "Resident Evil",
+        year: 2026,
+        releaseDate: "September 18, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt35538033/",
+        poster: "no poster",
+        summary:
+          "A hapless courier must deliver a package to a remote hospital and ends up trapped amid an outbreak, fighting through hordes of mutated creatures to survive.",
+        cast: [
+          "Paul Walter Hauser",
+          "Austin Abrams",
+          "Zach Cherry",
+          "Johnno Wilson"
+        ],
+        director: "Zach Cregger",
+        directorBest: "Weapons (2025)",
+        directorBestCritic: "93%",
+        directorBestAudience: "85%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/weapons",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/weapons",
+        directorWorst: "Miss March (2009)",
+        directorWorstCritic: "5%",
+        directorWorstAudience: "34%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/miss_march",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/miss_march"
+      },
+      {
+        title: "Street Fighter",
+        year: 2026,
+        releaseDate: "October 16, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt27419420/",
+        poster: "https://m.media-amazon.com/images/M/MV5BZTM5YTdlYjQtZDM0Zi00ZDk2LTkxYjgtZDJlYjI4MWFmYWNhXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "Street Fighters Ryu and Ken reunite when Chun-Li recruits them for the World Warrior Tournament. As they face a hidden conspiracy, they must confront each other and their past—or face destruction.",
+        cast: [
+          "Jason Momoa",
+          "50 Cent",
+          "David Dastmalchian",
+          "Noah Centineo"
+        ],
+        director: "Kitao Sakurai",
+        directorBest: "Bad Trip (2021)",
+        directorBestCritic: "79%",
+        directorBestAudience: "67%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/bad_trip",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/bad_trip",
+        directorWorst: "The Package (2018)",
+        directorWorstCritic: "37%",
+        directorWorstAudience: "50%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/the_package_2018",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/the_package_2018"
+      },
+      {
+        title: "Remain",
+        year: 2026,
+        releaseDate: "October 23, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt35621542/",
+        poster: "no poster",
+        summary:
+          "A grieving architect moves to Cape Cod for work after leaving a psychiatric facility. While staying at a historic B&B, he meets a mysterious woman who makes him question his rational beliefs about life and loss.",
+        cast: [
+          "Jake Gyllenhaal",
+          "M. Night Shyamalan",
+          "Phoebe Dynevor",
+          "Julie Hagerty"
+        ],
+        director: "M. Night Shyamalan",
+        directorBest: "The Sixth Sense (1999)",
+        directorBestCritic: "86%",
+        directorBestAudience: "90%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/the_sixth_sense",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/the_sixth_sense",
+        directorWorst: "The Last Airbender (2010)",
+        directorWorstCritic: "5%",
+        directorWorstAudience: "30%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/the_last_airbender",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/the_last_airbender"
+      },
+      {
+        title: "The Cat in the Hat",
+        year: 2026,
+        releaseDate: "November 6, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt2321555/",
+        poster: "https://m.media-amazon.com/images/M/MV5BYmJmZGZmMDgtYmJjMy00NTMyLWJjZmEtZDc2ZWRmZjY4MjJmXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "Meet the Cat in the Hat you don't know in an all-new, epic adventure where mischief, magic and mayhem reign supreme.",
+        cast: [
+          "Bill Hader",
+          "Xochitl Gomez",
+          "Tiago Martinez",
+          "Quinta Brunson"
+        ],
+        director: "Alessandro Carloni & Erica Rivinoja",
+        directorBest: "Kung Fu Panda 3 (2016)",
+        directorBestCritic: "87%",
+        directorBestAudience: "79%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/kung_fu_panda_3",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/kung_fu_panda_3",
+        directorWorst: "TBD",
+        directorWorstCritic: "N/A",
+        directorWorstAudience: "N/A",
+        directorWorstCriticLink: "",
+        directorWorstAudienceLink: ""
+      },
+      {
+        title: "Focker In-Law",
+        year: 2026,
+        releaseDate: "November 25, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt34966140/",
+        poster: "https://m.media-amazon.com/images/M/MV5BODA0NDc2Y2QtMDZhZC00ZWUzLTg0M2MtODMzYzcwYWE5YTliXkEyXkFqcGc@._V1_.jpg",
+        summary:
+          "A young man named Henry, son of Greg and Pam Focker, faces family chaos when he decides to marry a strong-willed woman who appears to be his complete mismatch.",
+        cast: [
+          "Ariana Grande",
+          "Ben Stiller",
+          "Robert De Niro",
+          "Skyler Gisondo"
+        ],
+        director: "John Hamburg",
+        directorBest: "I Love You, Man (2009)",
+        directorBestCritic: "82%",
+        directorBestAudience: "74%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/i_love_you_man",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/i_love_you_man",
+        directorWorst: "Along Came Polly (2004)",
+        directorWorstCritic: "27%",
+        directorWorstAudience: "47%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/along_came_polly",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/along_came_polly"
+      },
+      {
+        title: "Avengers: Doomsday",
+        year: 2026,
+        releaseDate: "December 18, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt21357150/",
+        poster: "https://m.media-amazon.com/images/M/MV5BMGNiN2RlZTMtMTkyZC00YjkwLTgyY2QtMDg1ZDNhODQwNWM4XkEyXkFqcGc@._V1_.jpg",
+        summary: "Plot under wraps.",
+        cast: [
+          "Robert Downey Jr.",
+          "Pedro Pascal",
+          "Chris Hemsworth",
+          "Vanessa Kirby"
+        ],
+        director: "Anthony Russo & Joe Russo",
+        directorBest: "Avengers: Endgame (2019)",
+        directorBestCritic: "94%",
+        directorBestAudience: "90%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/avengers_endgame",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/avengers_endgame",
+        directorWorst: "You, Me and Dupree (2006)",
+        directorWorstCritic: "21%",
+        directorWorstAudience: "50%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/you_me_and_dupree",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/you_me_and_dupree"
+      },
+      {
+        title: "Dune: Part Three",
+        year: 2026,
+        releaseDate: "December 18, 2026 (USA)",
+        imdb: "https://www.imdb.com/title/tt31378509/",
+        poster: "no poster",
+        summary:
+          "It follows Muad'dib, heir to unimaginable power, as he brings to fruition the ancient scheme to create a superbeing ruler among men, not in the heavens.",
+        cast: [
+          "Timoth\u00e9e Chalamet",
+          "Rebecca Ferguson",
+          "Anya Taylor-Joy",
+          "Florence Pugh"
+        ],
+        director: "Denis Villeneuve",
+        directorBest: "Arrival (2016)",
+        directorBestCritic: "94%",
+        directorBestAudience: "82%",
+        directorBestCriticLink: "https://www.rottentomatoes.com/m/arrival",
+        directorBestAudienceLink: "https://www.rottentomatoes.com/m/arrival",
+        directorWorst: "Enemy (2014)",
+        directorWorstCritic: "71%",
+        directorWorstAudience: "63%",
+        directorWorstCriticLink: "https://www.rottentomatoes.com/m/enemy_2014",
+        directorWorstAudienceLink: "https://www.rottentomatoes.com/m/enemy_2014"
+      }
+    ];
+
+    const grid = document.getElementById("movie-grid");
+    const printBtn = document.getElementById("print-btn");
+    const printBtnTop = document.getElementById("print-btn-top");
+    const uploadBtnTop = document.getElementById("upload-btn-top");
+    const uploadInput = document.getElementById("upload-input");
+    const selectMapCritic = {};
+    const selectMapAudience = {};
+
+    const createMovieCard = (movie, index) => {
+      const card = document.createElement("article");
+      card.className = "card";
+
+      if (movie.poster && movie.poster !== "no poster") {
+        const img = document.createElement("img");
+        img.className = "poster";
+        img.src = movie.poster;
+        img.alt = `${movie.title} poster`;
+        card.appendChild(img);
+      } else {
+        const noPoster = document.createElement("div");
+        noPoster.className = "poster";
+        noPoster.style.display = "grid";
+        noPoster.style.placeItems = "center";
+        noPoster.style.background = "#0b1222";
+        noPoster.textContent = "No poster";
+        card.appendChild(noPoster);
+      }
+
+      const content = document.createElement("div");
+      content.className = "content";
+
+      const titleRow = document.createElement("div");
+      titleRow.className = "title-row";
+
+      const title = document.createElement("h2");
+      title.className = "title";
+      title.textContent = movie.title;
+
+      const year = document.createElement("span");
+      year.className = "year";
+      year.textContent = movie.year;
+
+      titleRow.append(title, year);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = `
+        <span><span class="label">Release:</span> ${movie.releaseDate}</span>
+        <span><span class="label">Director:</span> ${movie.director}</span>
+      `;
+
+      const summary = document.createElement("p");
+      summary.style.margin = "4px 0 0";
+      summary.style.color = "var(--muted)";
+      summary.style.fontSize = "14px";
+      summary.textContent = movie.summary || "";
+
+      const castList = document.createElement("ul");
+      const castLabel = document.createElement("li");
+      castLabel.className = "label";
+      castLabel.textContent = "Top cast";
+      castList.appendChild(castLabel);
+      movie.cast.forEach(name => {
+        const li = document.createElement("li");
+        li.textContent = name;
+        castList.appendChild(li);
+      });
+
+      const directorNotes = document.createElement("ul");
+      const dirLabel = document.createElement("li");
+      dirLabel.className = "label";
+      dirLabel.textContent = "Director picks";
+      directorNotes.appendChild(dirLabel);
+      const formatScore = (label, score, url) =>
+        url
+          ? `<a href="${url}" target="_blank" rel="noopener">${label}: ${score}</a>`
+          : `${label}: ${score}`;
+      const dirBest = document.createElement("li");
+      dirBest.innerHTML = `Best: ${movie.directorBest} — ${formatScore(
+        "Critics",
+        movie.directorBestCritic,
+        movie.directorBestCriticLink
+      )} • ${formatScore(
+        "Audience",
+        movie.directorBestAudience,
+        movie.directorBestAudienceLink
+      )}`;
+      const dirWorst = document.createElement("li");
+      dirWorst.innerHTML = `Worst: ${movie.directorWorst} — ${formatScore(
+        "Critics",
+        movie.directorWorstCritic,
+        movie.directorWorstCriticLink
+      )} • ${formatScore(
+        "Audience",
+        movie.directorWorstAudience,
+        movie.directorWorstAudienceLink
+      )}`;
+      directorNotes.append(dirBest, dirWorst);
+
+      const listsColumn = document.createElement("div");
+      listsColumn.className = "lists-column";
+      listsColumn.append(castList, directorNotes);
+
+      const rtPicker = document.createElement("div");
+      rtPicker.className = "rt-picker";
+      const rtLabel = document.createElement("span");
+      rtLabel.className = "rt-label";
+      rtLabel.textContent = "Rotten Tomatoes scores";
+
+      const criticSelect = document.createElement("select");
+      criticSelect.className = "rt-select";
+      criticSelect.dataset.index = index;
+      criticSelect.dataset.title = movie.title;
+
+      const audienceSelect = document.createElement("select");
+      audienceSelect.className = "rt-select";
+      audienceSelect.dataset.index = index;
+      audienceSelect.dataset.title = movie.title;
+
+      const mapKey = movie.title.trim().toLowerCase();
+      selectMapCritic[mapKey] = criticSelect;
+      selectMapAudience[mapKey] = audienceSelect;
+
+      ["Skip", "Certified Fresh", "Fresh", "Rotten"].forEach(optionText => {
+        const opt = document.createElement("option");
+        opt.value = optionText;
+        opt.textContent = optionText;
+        criticSelect.appendChild(opt.cloneNode(true));
+        audienceSelect.appendChild(opt.cloneNode(true));
+      });
+
+      const criticIcon = document.createElement("img");
+      criticIcon.className = "rt-icon";
+      criticIcon.alt = "Critic badge";
+
+      const audienceIcon = document.createElement("img");
+      audienceIcon.className = "rt-icon";
+      audienceIcon.alt = "Audience badge";
+
+      const savedSelection = getSelection(movie.title);
+      criticSelect.value = savedSelection.critic;
+      audienceSelect.value = savedSelection.audience;
+
+      const updateCritic = () => {
+        const choice = criticSelect.value;
+        const icon = rtIcons[choice];
+        criticIcon.style.visibility = "visible";
+        if (icon) criticIcon.src = icon;
+        selections[movie.title] = {
+          critic: criticSelect.value,
+          audience: audienceSelect.value
+        };
+        saveSelections(selections);
+      };
+
+      const updateAudience = () => {
+        const choice = audienceSelect.value;
+        const icon = rtIcons[choice];
+        audienceIcon.style.visibility = "visible";
+        if (icon) audienceIcon.src = icon;
+        selections[movie.title] = {
+          critic: criticSelect.value,
+          audience: audienceSelect.value
+        };
+        saveSelections(selections);
+      };
+
+      criticSelect.addEventListener("change", updateCritic);
+      audienceSelect.addEventListener("change", updateAudience);
+      updateCritic();
+      updateAudience();
+
+      const criticRow = document.createElement("div");
+      criticRow.className = "rt-select-row";
+      criticRow.append(criticSelect, criticIcon);
+
+      const audienceRow = document.createElement("div");
+      audienceRow.className = "rt-select-row";
+      audienceRow.append(audienceSelect, audienceIcon);
+
+      const criticLabel = document.createElement("span");
+      criticLabel.className = "rt-label";
+      criticLabel.textContent = "Critic score";
+
+      const audienceLabel = document.createElement("span");
+      audienceLabel.className = "rt-label";
+      audienceLabel.textContent = "Audience score";
+
+      const criticBlock = document.createElement("div");
+      criticBlock.className = "rt-picker";
+      criticBlock.append(criticLabel, criticRow);
+
+      const audienceBlock = document.createElement("div");
+      audienceBlock.className = "rt-picker";
+      audienceBlock.append(audienceLabel, audienceRow);
+
+      const rtContainer = document.createElement("div");
+      rtContainer.className = "rt-stack";
+      rtContainer.append(criticBlock, audienceBlock);
+
+      const sectionWithSelect = document.createElement("div");
+      sectionWithSelect.className = "section-with-select";
+      sectionWithSelect.append(listsColumn, rtContainer);
+
+      const link = document.createElement("a");
+      link.href = movie.imdb;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = "View on IMDb";
+
+      content.append(titleRow, meta, summary, sectionWithSelect, link);
+      card.appendChild(content);
+      return card;
+    };
+
+    movies.forEach((movie, idx) => grid.appendChild(createMovieCard(movie, idx)));
+
+    const handlePrint = () => {
+      const lines = movies.map((movie, idx) => {
+        const sel = getSelection(movie.title);
+        return `${movie.title}: Critic ${sel.critic}, Audience ${sel.audience}`;
+      });
+      const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "movie-scores.txt";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    printBtn.addEventListener("click", handlePrint);
+    printBtnTop.addEventListener("click", handlePrint);
+
+    const applySelection = (title, criticChoice, audienceChoice) => {
+      const key = title.trim().toLowerCase();
+      const criticSelect = selectMapCritic[key];
+      const audienceSelect = selectMapAudience[key];
+      if (!criticSelect || !audienceSelect) return;
+      const critic = normalizeChoice(criticChoice);
+      const audience = normalizeChoice(audienceChoice);
+      criticSelect.value = critic;
+      audienceSelect.value = audience;
+      selections[title] = { critic, audience };
+      saveSelections(selections);
+      criticSelect.dispatchEvent(new Event("change"));
+      audienceSelect.dispatchEvent(new Event("change"));
+    };
+
+    uploadBtnTop.addEventListener("click", () => uploadInput.click());
+    uploadInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = reader.result || "";
+        text.split(/\r?\n/).forEach(rawLine => {
+          const line = (rawLine || "").trim();
+          if (!line) return;
+          const lastColon = line.lastIndexOf(":");
+          if (lastColon === -1) return;
+          const title = line.slice(0, lastColon).trim();
+          const rest = line.slice(lastColon + 1).trim();
+
+          let criticChoice = null;
+          let audienceChoice = null;
+
+          const criticMatch = rest.match(/critic\s+([^,]+?)(?=,|audience|$)/i);
+          const audienceMatch = rest.match(/audience\s+([^,]+?)(?=,|critic|$)/i);
+
+          if (criticMatch) criticChoice = criticMatch[1];
+          if (audienceMatch) audienceChoice = audienceMatch[1];
+
+          if (!audienceMatch) {
+            const parts = rest.split(",");
+            if (parts.length > 1) {
+              const maybeAudience = parts
+                .slice(1)
+                .join(",")
+                .replace(/audience/i, "")
+                .trim();
+              if (maybeAudience) audienceChoice = maybeAudience;
+            }
+          }
+
+          if (!criticMatch && !audienceMatch) {
+            criticChoice = rest;
+            audienceChoice = rest;
+          }
+
+          applySelection(title, criticChoice, audienceChoice);
+        });
+        uploadInput.value = "";
+      };
+      reader.readAsText(file);
+    });
+
+    // Pre-warm browser cache with poster images when supported to speed reloads.
+    if ("caches" in window) {
+      const posterUrls = movies
+        .map(m => m.poster)
+        .filter(url => url && url !== "no poster");
+      caches.open("movie-posters-v1").then(cache => {
+        posterUrls.forEach(url => {
+          cache.add(url).catch(() => {
+            // ignore failed poster fetches
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
